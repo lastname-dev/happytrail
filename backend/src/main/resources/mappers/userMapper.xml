@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.enjoytrip.model.repository.UserRepository">
+	
+	<insert id="join" parameterType="userDto">
+		insert into users (userid, userpw, nickname, phone, email, birthday, intro,salt)
+    	VALUES (#{userid}, #{userpw}, #{nickname}, #{phone}, #{email}, #{birthday}, #{intro},#{salt})
+	</insert>
+	
+	<select id="login" parameterType="userDto" resultType="userDto">
+		select nickname, userid, email, deleted
+		from users
+		where userid = #{userid} and userpw = #{userpw}
+	</select>
+	
+	<select id="userInfo" parameterType="string" resultType="userDto">
+		select nickname, userid, phone, email, birthday, intro, deleted
+		from users
+		where userid = #{userid}
+	</select>
+	
+	<select id="selectSalt" resultType="String">
+		select salt from users
+		where userid= #{userid}
+	</select>
+	
+	<select id="getRefreshToken" parameterType="string" resultType="string">
+		select token
+		from users
+		where userid = #{userid}
+	</select>
+	
+	<update id="saveRefreshToken" parameterType="map">
+		update users
+		set token = #{token}
+		where userid = #{userid}
+	</update>
+	
+	<update id="deleteRefreshToken" parameterType="map">
+		update users
+		set token = #{token, jdbcType=VARCHAR}
+		where userid = #{userid}
+	</update>
+	
+	<update id="modify" parameterType="userDto">
+		update users
+		set nickname= #{nickname} ,phone= #{phone} ,email = #{email} , birthday = #{birthday} , intro = #{intro}
+		where userid = #{userid}
+	</update>
+	<update id="delete" parameterType="String">
+		update users
+		set deleted=1
+		where userid = #{userid}
+	</update>
+
+	<insert id="follow" parameterType="map">
+		insert into follows (followeeid, followerid)
+		VALUES (#{followeeid},#{followerid})
+	</insert>
+
+	<delete id="unfollow" parameterType="map">
+		delete from follows
+		where followeeid = #{followeeid} and followerid= #{followerid}
+	</delete>
+
+	<select id="checkFollow" parameterType="map" resultType="int">
+		select count(*) from follows
+		where followeeid = #{followeeid} and followerid= #{followerid}
+	</select>
+	
+	<select id="followCount" resultType="int">
+		select count(*) from follows
+		where followerid= #{followerid}
+	</select>
+	<select id="followerCount" resultType="int">
+		select count(*) from follows
+		where followeeid= #{followeeid}
+	</select>
+	<select id="postCount" resultType="int">
+    	select count(*) from hotplaces
+    	where writer=#{userid}
+    </select>
+</mapper>

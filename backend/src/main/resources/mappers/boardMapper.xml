@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.enjoytrip.model.repository.BoardRepository">
+	
+	<select id="selectAll" resultType="Board">
+		select * from boards order by writtendate desc
+	</select>
+	
+	<select id="select" resultType="Board">
+		select * 
+		from boards
+		where boardid=#{boardid}
+	</select>
+	
+	<select id="search" resultType="Board">
+		select * 
+		from boards
+		where title like concat('%',#{keyword},'%')
+		or nickname like concat('%',#{keyword},'%')
+	</select>
+	
+	<delete id="delete">
+		delete 
+		from boards
+		where boardid=#{boardid}
+	</delete>
+	
+	<insert id="insert">
+		insert into boards (title, content, writer, nickname)
+		values (#{title}, #{content}, #{writer}, #{nickname})
+	</insert>
+	<update id="view">
+		update boards
+		set view = (view+1)
+		where boardid= #{boardid}
+	</update>
+	<update id="update">
+		update boards
+		set title=#{title}, content=#{content}
+		where boardid = #{boardid}
+	</update>
+</mapper>

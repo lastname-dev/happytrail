@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.ssafy.enjoytrip.model.repository.PlanRepository">
+
+	<!-- 등록 -->
+	<insert id="insertPlan" useGeneratedKeys="true" keyProperty="id">
+		insert into plans (title, writer, startdate,enddate)
+		values
+		(#{title},#{writer},#{startDate},#{endDate})
+	</insert>
+
+	<insert id="insertPlace">
+		insert into places (name, address,lat, lng,dayid)
+		values (#{place_name},#{address_name},#{x},#{y},#{dayid})
+	</insert>
+
+	<insert id="insertDay" useGeneratedKeys="true" keyProperty="id">
+		insert into day (content, cost,day,planid )
+		values
+		(#{content},#{cost},#{number},#{planid})
+	</insert>
+	<!-- 조회 -->
+	<select id="selectPlan" resultType="PlanDto">
+		select * from plans where
+		planid = #{planid}
+	</select>
+	<select id="selectSimplePlan" resultType="PlanSimpleDto">
+		SELECT *
+		FROM plans p
+		WHERE p.writer = #{userid}
+		OR p.planid IN (SELECT planid FROM share s WHERE s.userid = #{userid});
+	</select>
+	<select id="selectMembers" resultType="String">
+		select userid
+		from share
+		where planid = #{planid}
+	</select>
+
+
+
+	<select id="selectPlace" resultType="PlaceResponseDto">
+		select * from places where
+		dayid = #{dayid}
+	</select>
+
+	<select id="selectDay" resultType="PlanDayDto">
+		select * from day where
+		planid= #{planid}
+	</select>
+
+
+	<!-- 삭제 -->
+	<delete id="deletePlan">
+		delete from plans
+		where planid = #{planid}
+	</delete>
+	<delete id="deleteShare">
+		delete from share
+		where planid = #{planid}
+	</delete>
+	<delete id="deletePlace">
+		delete from places
+		where dayid =#{dayid}
+	</delete>
+	<delete id="deleteDay">
+		delete from day
+		where planid=#{planid}
+	</delete>
+
+	<!-- 수정 -->
+	<update id="updatePlan">
+		update plans
+		set
+		title=#{title},writer=#{writer},startdate=#{startDate},enddate=#{endDate}
+		where planid=#{id}
+	</update>
+	<update id="updateDay">
+		update day
+		set
+		content=#{content},cost=#{cost},day=#{number}
+		where dayid=#{dayid}
+	</update>
+	<update id="updatePlace">
+		update places
+		set
+		name=#{place_name},address=#{address_name},lat=#{x},
+		lng=#{y},dayid=#{dayid}
+		where placeid=#{placeid}
+	</update>
+	<!-- 멤버 -->
+	<insert id="inviteMember">
+		insert into share (userid, planid)
+		values
+		(#{memberid},#{planid})
+	</insert>
+
+	<delete id="deleteMember">
+		delete from share
+		where userid = #{memberid} and
+		planid = #{planid}
+	</delete>
+
+</mapper>

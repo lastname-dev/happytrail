@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.enjoytrip.model.repository.HCommentRepository">
+    <insert id="insert">
+        insert into hcomments (content,writer,hotplaceid)
+        values (#{content},#{writer},#{hotplaceid})
+    </insert>
+    <delete id="delete">
+        delete from hcomments
+        where commentid = #{commentid}
+    </delete>
+    <select id="selectAll" resultType="HCommentDto">
+        select *
+        from hcomments
+        where hotplaceid = #{hotplaceid}
+    </select>
+    <select id="countComment" resultType="int">
+        select count(*) from hcomments
+        where hotplaceid= #{hotplaceid}
+    </select>
+</mapper>

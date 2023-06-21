@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.enjoytrip.model.repository.HotplaceRepository">
+	
+	<!-- ############### SELECT ###############   -->
+	<select id="selectAll" resultType="HotplaceDto">
+	  SELECT h.hotplaceid, title, likecnt, commentcnt, content, writer, writtendate, nickname, placename, placeaddress, lat, lng,
+	    GROUP_CONCAT(url SEPARATOR ',') AS urls
+	  FROM hotplaces h JOIN images i ON h.hotplaceid = i.hotplaceid
+	  GROUP BY h.hotplaceid
+	</select>
+
+	
+	<select id="selectUser" resultType="HotplaceDto">
+	    SELECT h.hotplaceid, title, likecnt, commentcnt, content, writer, writtendate, nickname, placename, placeaddress, lat, lng,
+	        GROUP_CONCAT(url SEPARATOR ',') AS urls
+		FROM hotplaces h JOIN images i ON h.hotplaceid = i.hotplaceid
+		WHERE writer = #{writer}
+		GROUP BY h.hotplaceid;
+	</select>
+	
+	<select id="selectFollow" resultType="HotplaceDto">
+	    SELECT h.hotplaceid, title, likecnt, commentcnt, content, writer,  writtendate, nickname, placename, placeaddress, lat, lng,
+	        GROUP_CONCAT(url SEPARATOR ',') AS urls
+		FROM hotplaces h JOIN images i ON h.hotplaceid = i.hotplaceid
+		WHERE h.writer IN (
+		  SELECT followeeid
+		  FROM follows
+		  WHERE followerid = #{follower}
+		)
+		GROUP BY h.hotplaceid;
+	</select>
+	
+	<select id="selectLike" resultType="HotplaceDto">
+	    SELECT h.hotplaceid, title, likecnt, commentcnt, content, writer,  writtendate, nickname, placename, placeaddress, lat, lng,
+	        GROUP_CONCAT(url SEPARATOR ',') AS urls
+		FROM hotplaces h 
+		JOIN images i ON h.hotplaceid = i.hotplaceid
+		WHERE h.hotplaceid IN (
+		  SELECT hotplaceid
+		  FROM likepost
+		  WHERE userid = #{userid}
+		)
+		GROUP BY h.hotplaceid;
+	</select>
+	
+	<select id="selectDetail" resultType="HotplaceDto">
+	    SELECT h.hotplaceid, title, likecnt, commentcnt, content, writer, writtendate, nickname, placename, placeaddress, lat, lng,
+	        GROUP_CONCAT(url SEPARATOR ',') AS urls
+		FROM hotplaces h JOIN images i ON h.hotplaceid = i.hotplaceid
+		WHERE h.hotplaceid = #{hotplaceid}
+		GROUP BY h.hotplaceid;
+	</select>
+	
+	<!-- ############### SEARCH ###############   -->
+	<select id="search" resultType="HotplaceDto">
+	  SELECT h.hotplaceid, title, likecnt, commentcnt, content, writer, writtendate, nickname, placename, placeaddress, lat, lng,
+	    GROUP_CONCAT(url SEPARATOR ',') AS urls
+	  FROM hotplaces h JOIN images i ON h.hotplaceid = i.hotplaceid
+	  WHERE (title LIKE CONCAT('%', #{keyword}, '%')
+	    OR nickname LIKE CONCAT('%', #{keyword}, '%')
+	    OR placename LIKE CONCAT('%', #{keyword}, '%')
+	    OR placeaddress LIKE CONCAT('%', #{keyword}, '%'))
+	  GROUP BY h.hotplaceid
+	</select>
+
+	<select id="searchFollow" resultType="HotplaceDto">
+	    SELECT h.hotplaceid, title, likecnt, commentcnt, content, writer,  writtendate, nickname, placename, placeaddress, lat, lng,
+	        GROUP_CONCAT(url SEPARATOR ',') AS urls
+		FROM hotplaces h JOIN images i ON h.hotplaceid = i.hotplaceid
+		WHERE h.writer IN (
+		  SELECT followeeid
+		  FROM follows
+		  WHERE followerid = #{follower}
+		)
+		AND (
+			title LIKE CONCAT('%', #{keyword}, '%')
+		    OR nickname LIKE CONCAT('%', #{keyword}, '%')
+		    OR placename LIKE CONCAT('%', #{keyword}, '%')
+		    OR placeaddress LIKE CONCAT('%', #{keyword}, '%')
+	    )
+	  	GROUP BY h.hotplaceid
+	</select>
+	
+	<select id="searchLike" resultType="HotplaceDto">
+	    SELECT h.hotplaceid, title, likecnt, commentcnt, content, writer,  writtendate, nickname, placename, placeaddress, lat, lng,
+	        GROUP_CONCAT(url SEPARATOR ',') AS urls
+		FROM hotplaces h 
+		JOIN images i ON h.hotplaceid = i.hotplaceid
+		WHERE h.hotplaceid IN (
+		  SELECT hotplaceid
+		  FROM likepost
+		  WHERE userid = #{userid}
+		)
+		AND (
+			title LIKE CONCAT('%', #{keyword}, '%')
+		    OR nickname LIKE CONCAT('%', #{keyword}, '%')
+		    OR placename LIKE CONCAT('%', #{keyword}, '%')
+		    OR placeaddress LIKE CONCAT('%', #{keyword}, '%')
+	    )
+	  	GROUP BY h.hotplaceid
+	</select>
+	
+	<!-- ############### IMAGE ###############   -->
+	<delete id="deleteAllImages">
+		DELETE FROM images
+		where hotplaceid=#{hotplaceid}
+	</delete>
+	
+	<insert id="registImage">
+		insert into images (hotplaceid, url)
+		values(#{hotplaceid}, #{url});
+	</insert>
+
+	<delete id="deleteImages">
+		DELETE FROM images
+		where hotplaceid=#{hotplaceid} and url=#{url}
+	</delete>
+	
+	<select id="isUrl" resultType="Integer">
+		SELECT COUNT(*) FROM images
+		WHERE url=#{url}
+	</select>
+	
+	<delete id="deleteUrl">
+		DELETE FROM images
+		where url=#{url}
+	</delete>
+	
+	
+	<!-- ############### LIKE ###############   -->
+	<delete id="deleteAllLike">
+		DELETE FROM likepost
+		where hotplaceid=#{hotplaceid}
+	</delete>
+	
+	<update id="updateLike">
+	  UPDATE hotplaces
+	  SET likecnt = likecnt + #{cnt}
+	  WHERE hotplaceid = #{hotplaceid}
+	</update>
+	
+	<select id="isLike" resultType="Integer">
+		SELECT COUNT(*) FROM likepost
+		where userid=#{userid}
+		and hotplaceid=#{hotplaceid}
+	</select>
+	
+	<insert id="likePost">
+		insert into likepost
+		value(#{userid}, #{hotplaceid})
+	</insert>
+	
+	<delete id="unlikePost">
+		DELETE FROM likepost
+		where userid=#{userid}
+		and hotplaceid=#{hotplaceid}
+	</delete>
+	
+	
+	<!-- ############### REGIST MODIFY DELETE ###############   -->
+	<!-- <insert id="registHotplace"> -->
+	<insert id="registHotplace" useGeneratedKeys="true" keyProperty="hotplaceid">
+		INSERT INTO hotplaces (title, content, writer, nickname, placename, placeaddress, lat, lng)
+		VALUES(#{title}, #{content}, #{writer}, #{nickname}, #{placename}, #{placeaddress}, #{lat}, #{lng})
+	</insert>
+	
+	<update id="modifyHotplace">
+		UPDATE hotplaces
+		SET title=#{title}, content=#{content}, nickname=#{nickname}, 
+		placename=#{placename}, placeaddress=#{placeaddress}, lat=#{lat}, lng=#{lng}
+		where hotplaceid=#{hotplaceid}
+	</update>
+	
+	<delete id="deleteHotplace">
+		DELETE FROM hotplaces
+		where hotplaceid=#{hotplaceid}
+	</delete>
+	
+</mapper>
